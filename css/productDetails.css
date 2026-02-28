@@ -1,0 +1,16 @@
+body {
+        font-family: 'Roboto', sans-serif;
+}
+.cursor-pointer{
+        cursor: pointer;
+}
+#mainImage {
+        width: 100%;
+        max-height: 400px;
+        border-radius: 10px;  
+        object-fit: contain;
+        transition: transform 0.3s; 
+}
+#mainImage:hover{
+        transform: scale(1.02); 
+}
