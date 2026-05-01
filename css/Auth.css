@@ -1,0 +1,117 @@
+.text-primary {
+    color: white !important;
+}
+*{
+  font-family: "Exo", sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+
+/* sign up */
+body {
+  font-family: "Exo", sans-serif;
+  background: white; 
+}
+
+.login-card {
+  background: white;
+}
+
+.form-control {
+  border-radius: 10px;
+}
+
+button {
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+/* CART ITEM */
+.cart-item {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  padding: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.price {
+  font-weight: 700;
+}
+
+.old-price {
+  text-decoration: line-through;
+  color: #999;
+}
+
+.discount {
+  background: #e6f4ea;
+  color: #198754;
+}
+
+/* QUANTITY */
+.qty-box {
+  display: flex;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.qty-box button {
+  border: none;
+  background: #fff;
+  padding: 5px 12px;
+}
+
+.qty-box span {
+  padding: 5px 12px;
+  font-weight: 600;
+}
+
+/* SUMMARY */
+.summary-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.payment {
+  background: #f1f3f5;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+
+
+body {
+  font-family: "Exo", sans-serif;
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+}
+
+.login-page {
+  min-height: 100vh;
+}
+
+.login-card {
+  background: #ffffff;
+  width: 100%;
+  max-width: 420px;
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+}
+
+.form-control {
+  border-radius: 10px;
+}
+
+button {
+  border-radius: 10px;
+  font-weight: 600;
+}
