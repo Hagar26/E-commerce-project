@@ -1,261 +1,169 @@
-# 🛒 E-Commerce Platform | Full Stack MERN Application
+# 🛒 E-Commerce Website | Frontend + JSON Server API
 
 ---
 
-## 📖 Introduction
+## 📖 Project Overview
 
-A fully functional and scalable **E-Commerce Web Application** built using the **MERN Stack (MongoDB, Express.js, React.js, Node.js)**.
-This platform simulates a real-world online shopping experience with modern UI, secure authentication, and a powerful admin dashboard.
+This is a modern and responsive **E-Commerce Web Application** built using **HTML, CSS, and JavaScript**, powered by a mock backend using **JSON Server**.
 
-The goal of this project is to demonstrate strong full-stack development skills, clean architecture, and real-life business logic implementation.
-
----
-
-## 🌐 Live Demo
-
-🔗 https://hagar26.github.io/E-commerce-project/
+The project simulates a real-world shopping experience, including product browsing, cart management, and API integration.
 
 ---
 
-## 📌 Key Features
+## 🌟 Key Features
 
-### 👤 User Features
+### 🛍️ User Experience
 
-* 🔐 Secure Authentication (Register / Login / Logout)
-* 🛍️ Browse products by categories
-* 🔍 Advanced search functionality
-* 📄 View detailed product information
-* 🛒 Add / Remove items from cart
-* ❤️ Wishlist system (optional)
-* 📦 Place and track orders
-* 📱 Fully responsive design
+* Browse products with clean UI
+* View product details
+* Add / Remove items from cart
+* Dynamic cart updates
+* Responsive design (Mobile & Desktop)
 
 ---
 
-### 🛠️ Admin Dashboard
+### 🔌 API Integration
 
-* ➕ Add new products
-* ✏️ Update product details
-* ❌ Delete products
-* 👥 Manage users
-* 📦 Manage orders & update status
-* 📊 Dashboard analytics (basic stats)
+* Fetch products from JSON Server
+* Handle asynchronous requests using Fetch API / Axios
+* Dynamic rendering of data from API
 
 ---
 
-## 🧠 Technical Highlights
+### ⚡ Core Functionalities
 
-* RESTful API design
-* JWT Authentication & Authorization
-* MVC Architecture
-* Protected Routes
-* Error Handling Middleware
-* Scalable folder structure
-* Clean and reusable components
+* DOM Manipulation
+* Event Handling
+* Local Storage (for cart persistence)
+* Modular JavaScript structure
+
+---
+
+## 🧠 What I Learned
+
+* Working with REST APIs
+* Handling async JavaScript (Promises / Fetch)
+* Structuring frontend projects professionally
+* Managing application state without frameworks
+* Debugging and error handling
 
 ---
 
 ## 🛠️ Tech Stack
 
-### Frontend
-
-* React.js
-* React Router DOM
-* Axios
-* Tailwind CSS / Bootstrap
-
-### Backend
-
-* Node.js
-* Express.js
-
-### Database
-
-* MongoDB + Mongoose
+* HTML5
+* CSS3
+* JavaScript (ES6+)
+* JSON Server (Mock API)
 
 ---
 
 ## 📂 Project Structure
 
-```
-E-Commerce/
+```id="b1h4d2"
+project/
 │
-├── client/                # React Frontend
-│   ├── components/
-│   ├── pages/
-│   ├── hooks/
-│   └── services/
-│
-├── server/                # Backend API
-│   ├── controllers/
-│   ├── models/
-│   ├── routes/
-│   ├── middleware/
-│   └── config/
-│
-├── .env
+├── index.html
+├── css/
+│   └── style.css
+├── js/
+│   ├── main.js
+│   ├── cart.js
+│   └── api.js
+├── db.json
 └── README.md
 ```
 
 ---
 
-## ⚙️ Installation Guide
+## ⚙️ Setup & Installation
 
-### 1️⃣ Clone Repository
+### 1️⃣ Clone the repository
 
-```
+```id="k9s3c1"
 git clone https://github.com/your-username/e-commerce.git
 cd e-commerce
 ```
 
 ---
 
-### 2️⃣ Install Dependencies
+### 2️⃣ Install JSON Server
 
-#### Backend
-
-```
-cd server
-npm install
-```
-
-#### Frontend
-
-```
-cd client
-npm install
+```id="y7n2x4"
+npm install -g json-server
 ```
 
 ---
 
-### 3️⃣ Setup Environment Variables
+### 3️⃣ Run JSON Server
 
-Create `.env` file inside `server/`:
-
-```
-PORT=5000
-MONGO_URI=your_mongodb_connection_string
-JWT_SECRET=your_super_secret_key
+```id="d8m5q0"
+json-server --watch db.json --port 3000
 ```
 
 ---
 
-### 4️⃣ Run Application
+### 4️⃣ Open Project
 
-#### Start Backend
-
-```
-npm run server
-```
-
-#### Start Frontend
-
-```
-npm run dev
-```
+Just open `index.html` in your browser
+OR use Live Server in VS Code
 
 ---
 
-## 🔐 Authentication Flow
+## 🔗 API Endpoints
 
-1. User registers account
-2. Password is hashed using bcrypt
-3. JWT token is generated
-4. Token is stored and used for protected routes
-5. Middleware verifies token on each request
-
----
-
-## 🔄 API Endpoints
-
-### Auth
-
-* POST `/api/auth/register`
-* POST `/api/auth/login`
-
-### Products
-
-* GET `/api/products`
-* GET `/api/products/:id`
-* POST `/api/products` (Admin)
-* PUT `/api/products/:id` (Admin)
-* DELETE `/api/products/:id` (Admin)
-
-### Orders
-
-* POST `/api/orders`
-* GET `/api/orders`
-* PUT `/api/orders/:id`
+| Method | Endpoint      | Description        |
+| ------ | ------------- | ------------------ |
+| GET    | /products     | Get all products   |
+| GET    | /products/:id | Get single product |
 
 ---
 
-## 📸 Screenshots
+## 🛒 Cart Logic
 
-### 🏠 Home Page
-
-(Add screenshot here)
-
-### 🛍️ Product Page
-
-(Add screenshot here)
-
-### 🛠️ Admin Dashboard
-
-(Add screenshot here)
+* Products are stored in **localStorage**
+* Cart updates dynamically on user interaction
+* Quantity management supported
 
 ---
 
-## 🚀 Future Enhancements
+## 🚀 Future Improvements
 
-* 💳 Online Payment Integration (Stripe)
-* ⭐ Product Reviews & Ratings
-* 📦 Order Tracking System
-* 🌍 Multi-language support
-* 📊 Advanced analytics dashboard
-
----
-
-## 🧪 Testing (Optional Section)
-
-* Unit Testing using Jest
-* API Testing using Postman
+* 🔐 Authentication system
+* 💳 Payment integration
+* ❤️ Wishlist feature
+* 🔎 Advanced filtering & sorting
+* 📦 Order system
 
 ---
 
 ## 📦 Deployment
 
-### Frontend
+You can deploy easily using:
 
-* Vercel / Netlify
-
-### Backend
-
-* Render / Railway
-
-### Database
-
-* MongoDB Atlas
+* GitHub Pages
 
 ---
 
 ## 👩‍💻 Author
 
 **Hager Ashraf Ahmed**
-Full Stack MERN Developer
+Frontend Web Developer
 
 ---
 
-## 📬 Contact Me
+## 📬 Contact
 
-* 💼 LinkedIn: https://linkedin.com/in/your-profile
-* 💻 GitHub: https://github.com/your-username
-* 📧 Email: [your-email@example.com](mailto:your-email@example.com)
+* GitHub: https://github.com/Hagar26
 
 ---
 
 ## ⭐ Support
 
-If you like this project, please ⭐ the repository and share it!
+If you like this project, give it a ⭐ on GitHub!
+
+---
+
 
 ---
 
