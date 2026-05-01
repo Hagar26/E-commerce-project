@@ -4,6 +4,8 @@ let totalPriceEl = document.getElementById("totalPrice");
 let cartItems = [];
 let currentUser = null;
 
+var FIREBASE_URL = "https://e-commerce-2d795-default-rtdb.firebaseio.com";
+
 async function fetchCart() {
     try {
         currentUser = JSON.parse(localStorage.getItem("user"));
@@ -14,11 +16,16 @@ async function fetchCart() {
             return;
         }
 
-        let res = await fetch(
-            `http://localhost:10000/carts?userId=${currentUser.id}`
-        );
+        let res = await fetch(`${FIREBASE_URL}/carts.json`);
+        let data = await res.json();
 
-        cartItems = await res.json();
+        cartItems = [];
+        if (data) {
+            cartItems = Object.keys(data)
+                .map(key => ({ firebaseId: key, ...data[key] }))
+                .filter(item => item.userId === currentUser.id);
+        }
+        
         renderCart();
 
     } catch (err) {
@@ -30,8 +37,7 @@ function renderCart() {
     orderList.innerHTML = "";
 
     if (cartItems.length === 0) {
-        orderList.innerHTML =
-            "<li class='list-group-item text-center'>Your cart is empty</li>";
+        orderList.innerHTML = "<li class='list-group-item text-center'>Your cart is empty</li>";
         totalPriceEl.textContent = "$0";
         return;
     }
@@ -43,8 +49,7 @@ function renderCart() {
         let price = parseFloat(item.price || 0);
 
         let li = document.createElement("li");
-        li.className =
-            "list-group-item d-flex justify-content-between align-items-center";
+        li.className = "list-group-item d-flex justify-content-between align-items-center";
 
         li.innerHTML = `
             <div class="d-flex align-items-center gap-3">
@@ -66,8 +71,10 @@ document.addEventListener("DOMContentLoaded", fetchCart);
 let cardFormContainer = document.getElementById("cardFormContainer");
 
 function showCardForm() {
-    let payment =
-        document.querySelector("input[name='payment']:checked").value;
+    let paymentElement = document.querySelector("input[name='payment']:checked");
+    if(!paymentElement) return;
+
+    let payment = paymentElement.value;
 
     if (payment === "Card") {
         cardFormContainer.innerHTML = `
@@ -96,83 +103,58 @@ document.querySelectorAll("input[name='payment']").forEach(r => {
     r.addEventListener("change", showCardForm);
 });
 
-document
-    .getElementById("checkoutForm")
-    .addEventListener("submit", async function (e) {
-        e.preventDefault();
+document.getElementById("checkoutForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
 
-        if (cartItems.length === 0) {
-            alert("Your cart is empty!");
+    if (cartItems.length === 0) {
+        alert("Your cart is empty!");
+        return;
+    }
+
+    let orderData = {
+        userId: currentUser.id,
+        customer: document.getElementById("firstName").value + " " + document.getElementById("lastName").value,
+        email: document.getElementById("email").value,
+        address: document.getElementById("address").value,
+        phone: document.getElementById("phone").value,
+        paymentMethod: document.querySelector("input[name='payment']:checked").value,
+        products: cartItems,
+        total: cartItems.reduce((a, b) => a + (b.price * (b.quantity || b.qty || 1)), 0),
+        status: "Pending",
+        date: new Date().toISOString().split("T")[0]
+    };
+
+    if (orderData.paymentMethod === "Card") {
+        let cardNumber = document.getElementById("cardNumber").value;
+        let expiry = document.getElementById("expiry").value;
+        let cvv = document.getElementById("cvv").value;
+
+        if (cardNumber.length !== 16 || cvv.length !== 3 || !expiry) {
+            alert("Please enter valid card details!");
             return;
         }
+        orderData.cardInfo = { cardNumber, expiry, cvv };
+    }
 
-        let orderData = {
-            userId: currentUser.id,
-            customer:
-                document.getElementById("firstName").value +
-                " " +
-                document.getElementById("lastName").value,
+    try {
+        let res = await fetch(`${FIREBASE_URL}/orders.json`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(orderData)
+        });
 
-            email: document.getElementById("email").value,
-            address: document.getElementById("address").value,
-            phone: document.getElementById("phone").value,
+        if (!res.ok) throw new Error("Order failed");
 
-            paymentMethod:
-                document.querySelector("input[name='payment']:checked")
-                    .value,
-
-            products: cartItems,
-
-            total: cartItems.reduce(
-                (a, b) =>
-                    a +
-                    (b.price * (b.quantity || b.qty || 1)),
-                0
-            ),
-
-            status: "Pending",
-            date: new Date().toISOString().split("T")[0]
-        };
-
-        if (orderData.paymentMethod === "Card") {
-            let cardNumber =
-                document.getElementById("cardNumber").value;
-            let expiry =
-                document.getElementById("expiry").value;
-            let cvv =
-                document.getElementById("cvv").value;
-
-            if (cardNumber.length !== 16 || cvv.length !== 3 || !expiry) {
-                alert("Please enter valid card details!");
-                return;
-            }
-
-            orderData.cardInfo = { cardNumber, expiry, cvv };
+        for (let item of cartItems) {
+            await fetch(`${FIREBASE_URL}/carts/${item.firebaseId}.json`, { 
+                method: "DELETE" 
+            });
         }
 
-        try {
-            let res = await fetch(
-                "http://localhost:10000/orders",
-                {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(orderData)
-                }
-            );
+        window.location.href = "success.html";
 
-            if (!res.ok) throw new Error("Order failed");
-
-            for (let item of cartItems) {
-                await fetch(
-                    `http://localhost:10000/carts/${item.id}`,
-                    { method: "DELETE" }
-                );
-            }
-
-            window.location.href = "success.html";
-
-        } catch (err) {
-            console.error(err);
-            alert("Failed to place order!");
-        }
-    });
+    } catch (err) {
+        console.error(err);
+        alert("Failed to place order!");
+    }
+});

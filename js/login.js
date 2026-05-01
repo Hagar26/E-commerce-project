@@ -1,15 +1,22 @@
 const loginForm = document.getElementById("loginForm");
 const errorMsg = document.getElementById("error");
-const BASE_URL = "http://localhost:10000/users";
+
+var FIREBASE_URL = "https://e-commerce-2d795-default-rtdb.firebaseio.com";
 
 async function fetchUser(email, password) {
-  const response = await fetch(`${BASE_URL}?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`, {
+  const response = await fetch(`${FIREBASE_URL}/users.json`, {
     cache: "no-store"
   });
 
   if (!response.ok) throw new Error("Server Error");
   const data = await response.json();
-  return data;
+
+  if (!data) return [];
+
+  const usersArray = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+  const user = usersArray.find(u => u.email === email && u.password === password);
+  
+  return user ? [user] : [];
 }
 
 loginForm.addEventListener("submit", async (e) => {

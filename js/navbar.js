@@ -3,6 +3,8 @@ if (window.location.pathname.includes("/html/")) {
   basePath = "../";
 }
 
+var FIREBASE_URL = "https://e-commerce-2d795-default-rtdb.firebaseio.com";
+
 const navbarContainer = document.getElementById("navbar-container");
 
 if (navbarContainer) {
@@ -74,15 +76,21 @@ async function updateCartCount() {
   }
 
   try {
-    let res = await fetch(`http://localhost:10000/carts?userId=${user.id}`);
-    let items = await res.json();
+    let res = await fetch(`${FIREBASE_URL}/carts.json`);
+    let data = await res.json();
 
     let total = 0;
-    items.forEach(item => total += item.quantity || 0);
+    if (data) {
+      Object.values(data).forEach(item => {
+        if (item.userId === user.id) {
+          total += (item.quantity || 0);
+        }
+      });
+    }
 
     cartCountElements.forEach(el => el.textContent = total);
   } catch (err) {
-    console.error(err);
+    console.error("Cart Count Error:", err);
     cartCountElements.forEach(el => el.textContent = "0");
   }
 }

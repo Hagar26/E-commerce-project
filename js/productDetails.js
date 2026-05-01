@@ -1,15 +1,16 @@
+var FIREBASE_URL = "https://e-commerce-2d795-default-rtdb.firebaseio.com";
+
 function getProductId() {
     let params = new URLSearchParams(window.location.search);
     return params.get('id');
 }
 
 function calcNewPrice(price, discount) {
-    return (price * (1 - discount / 100)).toFixed(2);
+    return (price * (1 - (discount || 0) / 100)).toFixed(2);
 }
 
 function stars(rating) {
     let starsHtml = '';
-
     for (let i = 1; i <= 5; i++) {
         if (i <= Math.floor(rating)) {
             starsHtml += `<i class="fa-solid fa-star text-warning"></i>`;
@@ -19,22 +20,21 @@ function stars(rating) {
             starsHtml += `<i class="fa-regular fa-star text-secondary"></i>`;
         }
     }
-
     return starsHtml;
 }
 
 function displayProduct(productData) {
     let mainImage = document.getElementById('mainImage');
-    mainImage.src = productData.images[0] || productData.thumbnail;
+    mainImage.src = productData.images ? productData.images[0] : productData.thumbnail;
 
     let thumbnailsContainer = document.getElementById('thumbnailsContainer');
     thumbnailsContainer.innerHTML = '';
 
-    (productData.images || []).forEach(imgUrl => {
+    (productData.images || [productData.thumbnail]).forEach(imgUrl => {
         let img = document.createElement('img');
         img.src = imgUrl;
         img.width = 80;
-        img.classList.add('img-thumbnail', 'cursor-pointer');
+        img.classList.add('img-thumbnail', 'cursor-pointer', 'm-1');
         img.onclick = () => mainImage.src = imgUrl;
         thumbnailsContainer.appendChild(img);
     });
@@ -57,25 +57,17 @@ function displayProduct(productData) {
         addBtn.disabled = true;
     }
 
-    document.getElementById('newPrice').innerText =
-        `$${calcNewPrice(productData.price, productData.discountPercentage)}`;
-
-    document.getElementById('oldPrice').innerText =
-        `$${productData.price}`;
-
-    document.getElementById('discountPercent').innerText =
-        `-${productData.discountPercentage.toFixed(2)}%`;
-
-    document.getElementById('productDesc').innerText =
-        productData.description;
+    document.getElementById('newPrice').innerText = `$${calcNewPrice(productData.price, productData.discountPercentage)}`;
+    document.getElementById('oldPrice').innerText = `$${productData.price}`;
+    document.getElementById('discountPercent').innerText = `-${(productData.discountPercentage || 0).toFixed(2)}%`;
+    document.getElementById('productDesc').innerText = productData.description;
 
     setupQuantityControls(productData.stock);
-    renderReviews(productData);
+    if (productData.reviews) renderReviews(productData);
 
     document.getElementById("addToCartBtn").onclick = function () {
         addToCart(productData);
     };
-
 }
 
 function setupQuantityControls(stock) {
@@ -84,10 +76,10 @@ function setupQuantityControls(stock) {
     let minusBtn = document.getElementById("minusBtn");
 
     qtyInput.value = 1;
-
     function updateButtons() {
         let value = parseInt(qtyInput.value);
         minusBtn.disabled = value <= 1;
+        plusBtn.disabled = value >= stock;
     }
 
     plusBtn.onclick = () => {
@@ -95,16 +87,10 @@ function setupQuantityControls(stock) {
         if (value < stock) {
             qtyInput.value = value + 1;
         } else {
-            Swal.fire({
-                icon: "info",
-                title: "Stock limit reached",
-                text: `Only ${stock} item(s) available in stock`,
-                confirmButtonText: "OK"
-            });
+            Swal.fire({ icon: "info", title: "Stock limit reached", text: `Only ${stock} items available` });
         }
         updateButtons();
     };
-
 
     minusBtn.onclick = () => {
         let value = parseInt(qtyInput.value);
@@ -114,18 +100,8 @@ function setupQuantityControls(stock) {
 
     qtyInput.oninput = () => {
         let value = parseInt(qtyInput.value);
-        if (isNaN(value) || value < 1){
-            value = 1;
-        }
-        if (value > stock) {
-            Swal.fire({
-                icon: "info",
-                title: "Stock limit reached",
-                text: `Only ${stock} items available in stock`,
-                confirmButtonText: "OK"
-            });
-            value = stock;
-        }
+        if (isNaN(value) || value < 1) value = 1;
+        if (value > stock) value = stock;
         qtyInput.value = value;
         updateButtons();
     };
@@ -134,61 +110,50 @@ function setupQuantityControls(stock) {
 
 function renderReviews(productData) {
     let container = document.getElementById('reviewsContainer');
+    if (!container) return;
     container.innerHTML = '';
-    productData.reviews.forEach(rev => {
-        let date = new Date(rev.date)
-            .toLocaleDateString('en-GB');
+    
+    let reviews = Array.isArray(productData.reviews) ? productData.reviews : Object.values(productData.reviews || {});
+    
+    reviews.forEach(rev => {
+        let date = new Date(rev.date).toLocaleDateString('en-GB');
         container.innerHTML += `
             <div class="col-md-4 mb-3">
-                <div class="p-3 shadow-sm rounded h-100">
+                <div class="p-3 shadow-sm rounded h-100 border">
                     <div class="d-flex align-items-center gap-2 mb-2">
-                        <div class="d-flex justify-content-center align-items-center bg-primary rounded-circle text-light" style="width:50px;height:50px;font-size:20px;">
+                        <div class="d-flex justify-content-center align-items-center bg-primary rounded-circle text-light" style="width:40px;height:40px;">
                             <i class="fa-regular fa-user"></i>
                         </div>
-
                         <div>
-                            <h6 class="mb-0 fw-bold">
-                                ${rev.reviewerName}
-                            </h6>
-                            <small class="text-muted">
-                                ${date}
-                            </small>
+                            <h6 class="mb-0 fw-bold">${rev.reviewerName}</h6>
+                            <small class="text-muted">${date}</small>
                         </div>
                     </div>
-
-                    <div class="rating-stars mb-2">
-                        ${stars(rev.rating)}
-                    </div>
-
-                    <p class="small mb-0">
-                        "${rev.comment}"
-                    </p>
+                    <div class="rating-stars mb-2">${stars(rev.rating)}</div>
+                    <p class="small mb-0">"${rev.comment}"</p>
                 </div>
-            </div>
-        `;
+            </div>`;
     });
 }
 
-function fetchProduct(productId) {
-    let request = new XMLHttpRequest();
-    request.open('GET', `http://localhost:10000/products/${productId}`);
-    request.send();
-
-    request.addEventListener("readystatechange", function () {
-        if (request.readyState === 4 && request.status === 200) {
-            const productData =JSON.parse(request.responseText);
-
-            displayProduct(productData);
+async function fetchProduct(productId) {
+    try {
+        let res = await fetch(`${FIREBASE_URL}/products.json`);
+        let products = await res.json();
+        
+        let product = Object.values(products).find(p => p.id == productId);
+        
+        if (product) {
+            displayProduct(product);
+        } else {
+            console.error("Product not found");
         }
-    });
+    } catch (err) {
+        console.error("Error fetching product:", err);
+    }
 }
 
-window.onload = () => {
-    const productId = getProductId();
-    if (productId) fetchProduct(productId);
-};
-
-function addToCart(productData) {
+async function addToCart(productData) {
     const user = JSON.parse(localStorage.getItem("user"));
     if (!user) {
         alert("Please login first!");
@@ -197,57 +162,54 @@ function addToCart(productData) {
 
     const qty = parseInt(document.getElementById("qtyInput").value);
 
-    // Check if product exists
-    let checkRequest = new XMLHttpRequest();
-    checkRequest.open("GET",`http://localhost:10000/carts?userId=${user.id}&productId=${productData.id}`);
-    checkRequest.send();
+    try {
+        let res = await fetch(`${FIREBASE_URL}/carts.json`);
+        let data = await res.json();
+        
+        let existingKey = null;
+        let currentQty = 0;
 
-    checkRequest.onreadystatechange = function () {
-        if (checkRequest.readyState === 4 && checkRequest.status === 200) {
-            const existing = JSON.parse(checkRequest.responseText);
+        if (data) {
+            for (let key in data) {
+                if (data[key].userId === user.id && data[key].productId === productData.id) {
+                    existingKey = key;
+                    currentQty = data[key].quantity;
+                    break;
+                }
+            }
+        }
 
-            if (existing.length > 0) {
-                // update quantity
-                let updateRequest = new XMLHttpRequest();
-                updateRequest.open("PATCH",`http://localhost:10000/carts/${existing[0].id}`);
-                updateRequest.setRequestHeader("Content-Type","application/json;charset=UTF-8");
-
-                updateRequest.send(
-                    JSON.stringify({
-                        quantity: existing[0].quantity + qty
-                    })
-                );
-                updateRequest.onreadystatechange = function () {
-                    if (updateRequest.readyState === 4) {
-                        updateCartCount();
-                    }
-                };
-
-            } else {
-                // add new item
-                let addRequest = new XMLHttpRequest();
-                addRequest.open("POST", "http://localhost:10000/carts");
-                addRequest.setRequestHeader(
-                    "Content-Type",
-                    "application/json;charset=UTF-8"
-                );
-
-                addRequest.send(JSON.stringify({
+        if (existingKey) {
+            await fetch(`${FIREBASE_URL}/carts/${existingKey}.json`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ quantity: currentQty + qty })
+            });
+        } else {
+            await fetch(`${FIREBASE_URL}/carts.json`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
                     userId: user.id,
                     productId: productData.id,
                     title: productData.title,
                     price: productData.price,
-                    discountPercentage:productData.discountPercentage,
+                    discountPercentage: productData.discountPercentage || 0,
                     image: productData.thumbnail,
                     quantity: qty
-                }));
-
-                addRequest.onreadystatechange = function () {
-                    if (addRequest.readyState === 4 && addRequest.status === 201) {
-                        updateCartCount();
-                    }
-                };
-            }
+                })
+            });
         }
-    };
+        
+        if (typeof updateCartCount === "function") updateCartCount();
+        alert(`Added ${qty} item(s) to cart!`);
+        
+    } catch (err) {
+        console.error("Error adding to cart:", err);
+    }
 }
+
+window.onload = () => {
+    const productId = getProductId();
+    if (productId) fetchProduct(productId);
+};

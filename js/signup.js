@@ -1,4 +1,5 @@
-const BASE_URL = "http://localhost:3000";
+var FIREBASE_URL = "https://e-commerce-2d795-default-rtdb.firebaseio.com";
+
 const registerForm = document.getElementById("registerForm");
 const nameError = document.getElementById("nameError");
 const emailError = document.getElementById("emailError");
@@ -22,14 +23,14 @@ registerForm.addEventListener("submit", async (e) => {
   const confirmPassword = document.getElementById("confirmPassword").value.trim();
 
   let hasError = false;
+
   if (!name) {
     nameError.textContent = "Name is required";
     hasError = true;
   } else {
     const nameRegex = /^[A-Za-z\u0600-\u06FF\s]{3,}$/;
     if (!nameRegex.test(name)) {
-      nameError.textContent =
-        "Name must be at least 3 letters and contain only letters";
+      nameError.textContent = "Name must be at least 3 letters and contain only letters";
       hasError = true;
     }
   }
@@ -43,11 +44,9 @@ registerForm.addEventListener("submit", async (e) => {
     passwordError.textContent = "Password is required";
     hasError = true;
   } else {
-    const passwordRegex =
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
     if (!passwordRegex.test(password)) {
-      passwordError.textContent =
-        "Password must be at least 8 chars, include uppercase, lowercase, number, and special char";
+      passwordError.textContent = "Password must be at least 8 chars, include uppercase, lowercase, number, and special char";
       hasError = true;
     }
   }
@@ -63,24 +62,34 @@ registerForm.addEventListener("submit", async (e) => {
   if (hasError) return;
 
   try {
-    const checkEmail = await fetch(`${BASE_URL}/users?email=${encodeURIComponent(email)}`);
-    const emailData = await checkEmail.json();
-    if (emailData.length > 0) {
-      emailError.textContent = "Email already exists";
-      return;
+    const checkEmailResponse = await fetch(`${FIREBASE_URL}/users.json`);
+    const allUsers = await checkEmailResponse.json();
+
+    if (allUsers) {
+      const emailExists = Object.values(allUsers).some(u => u.email === email);
+      if (emailExists) {
+        emailError.textContent = "Email already exists";
+        return;
+      }
     }
 
-    const response = await fetch(`${BASE_URL}/users`, {
+    const userId = Date.now();
+
+    const response = await fetch(`${FIREBASE_URL}/users.json`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password, role: "customer" }),
+      body: JSON.stringify({ 
+        id: userId, 
+        name, 
+        email, 
+        password, 
+        role: "customer" 
+      }),
     });
 
     if (!response.ok) throw new Error("Error registering user");
 
-    // alert("Account created successfully ");
     window.location.href = "./login.html";
-
 
   } catch (error) {
     console.error(error);
